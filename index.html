@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Procedural Isekai — World Engine</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============================================================ TITLE -->
+<section id="screen-title" class="screen">
+  <div class="title-wrap">
+    <header class="title-head">
+      <h1>Procedural Isekai</h1>
+      <p>A world is generated, then a few centuries of its history are simulated
+         before you get there. Borders, relics, ruined towns and which monster
+         owns which dungeon are all consequences of events that actually ran.</p>
+    </header>
+
+    <div class="title-cols">
+      <div class="seedbox">
+        <label for="seed-input">Seed</label>
+        <div class="row">
+          <input id="seed-input" type="text" spellcheck="false">
+          <button id="btn-newseed" title="Random seed">⟳</button>
+        </div>
+        <p class="hint">The same seed and settings always produce the same world,
+           down to the name of every relic and who is holding it.</p>
+        <div class="row">
+          <button id="btn-random">Randomize all</button>
+          <button id="btn-load">Continue saved game</button>
+        </div>
+        <button id="btn-generate" class="primary big">Generate world</button>
+      </div>
+      <div id="title-params" class="params"></div>
+    </div>
+  </div>
+
+  <div id="genprogress" class="hidden">
+    <div class="genbox">
+      <h2>Genesis</h2>
+      <div class="genbar"><i id="genprogress-fill"></i></div>
+      <p id="genprogress-label">…</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= CREATION -->
+<section id="screen-create" class="screen hidden">
+  <header class="create-head">
+    <h1>Arrival</h1>
+    <div class="row">
+      <button id="btn-back-title">Back</button>
+      <button id="btn-begin" class="primary">Begin</button>
+    </div>
+  </header>
+  <div id="create-body" class="create-body"></div>
+</section>
+
+<!-- ============================================================= GAME -->
+<section id="screen-game" class="screen hidden">
+  <div id="topbar"></div>
+  <div class="game-body">
+    <div class="left">
+      <div id="mapwrap">
+        <canvas id="map"></canvas>
+        <div class="maptools">
+          <select id="map-mode">
+            <option value="political">Political</option>
+            <option value="terrain">Terrain</option>
+            <option value="danger">Danger</option>
+            <option value="mana">Mana</option>
+          </select>
+          <div class="legend">
+            <span><i class="k-town"></i>settlement</span>
+            <span><i class="k-dungeon"></i>dungeon</span>
+            <span><i class="k-lair"></i>monster lair</span>
+            <span><i class="k-ruin"></i>ruin</span>
+          </div>
+        </div>
+      </div>
+      <div id="tileinfo"></div>
+      <div id="log"></div>
+    </div>
+    <div id="sidebar"></div>
+  </div>
+  <div id="overlay" class="hidden"></div>
+</section>
+
+<div id="modal-host" class="hidden"></div>
+<div id="toasts"></div>
+
+<script src="src/core/rng.js"></script>
+<script src="src/core/util.js"></script>
+<script src="src/core/noise.js"></script>
+<script src="src/data/tables.js"></script>
+<script src="src/data/names.js"></script>
+<script src="src/data/skills.js"></script>
+<script src="src/data/races.js"></script>
+<script src="src/data/items.js"></script>
+<script src="src/data/monsters.js"></script>
+<script src="src/data/events.js"></script>
+<script src="src/gen/skillgen.js"></script>
+<script src="src/gen/racegen.js"></script>
+<script src="src/gen/geo.js"></script>
+<script src="src/gen/itemgen.js"></script>
+<script src="src/gen/monstergen.js"></script>
+<script src="src/gen/nations.js"></script>
+<script src="src/gen/dungeons.js"></script>
+<script src="src/gen/world.js"></script>
+<script src="src/sim/procs.js"></script>
+<script src="src/sim/history.js"></script>
+<script src="src/sim/worldclock.js"></script>
+<script src="src/game/combat.js"></script>
+<script src="src/game/evolution.js"></script>
+<script src="src/game/player.js"></script>
+<script src="src/game/economy.js"></script>
+<script src="src/game/quests.js"></script>
+<script src="src/game/dungeonrun.js"></script>
+<script src="src/game/game.js"></script>
+<script src="src/ui/map.js"></script>
+<script src="src/ui/ui.js"></script>
+<script>ISE.UI.boot();</script>
+</body>
+</html>
