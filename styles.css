@@ -380,6 +380,20 @@ blockquote { margin: 6px 0; padding-left: 12px; border-left: 2px solid var(--lin
 .cl.relic { color: var(--gold); }
 .cl.skill { color: var(--r-rare); }
 .cl.quest { color: var(--gold); }
+.turnorder { display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+              margin-bottom: 8px; font-size: 11.5px; }
+.turnorder label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+                   color: var(--dim); margin-right: 4px; }
+.turnorder i { color: var(--dimmer); font-style: normal; }
+.turn { padding: 2px 7px; border: 1px solid var(--line); border-radius: 10px;
+        color: var(--dim); background: var(--bg2); }
+.turn.party { border-color: #2f5f6d; color: #a9d8e6; }
+.turn.enemy { border-color: #6d3a2f; color: #e6b3a9; }
+.turn.now { outline: 1px solid var(--accent); color: var(--ink); }
+.turn.done { opacity: .4; }
+.turn.dead { text-decoration: line-through; opacity: .3; }
+.cl.preempt { color: var(--war); }
+
 .cactions { padding-top: 10px; }
 .skillbar { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
             gap: 6px; margin-bottom: 8px; max-height: 220px; overflow: auto; }

@@ -361,13 +361,23 @@
     var st = G.state, p = st.player, w = st.world;
     var stats = ISE.Player.effectiveStats(p);
     var nextXp = ISE.Player.xpToNext(p.level);
+
+    /* During a fight the combat actor holds the live values — player.hpCur
+     * is only written back when the fight ends. Reading the stale record
+     * here put two disagreeing HP bars on screen at once. */
+    var combat = st.run ? st.run.combat : st.combat;
+    var hpNow = p.hpCur, mpNow = p.mpCur;
+    if (combat && !combat.over) {
+      var me = ISE.Combat.actorById(combat, 'player');
+      if (me) { hpNow = me.hp; mpNow = me.mp; }
+    }
     $('#topbar').innerHTML =
       '<div class="who"><b>' + esc(p.name) + '</b>' +
         '<span>' + esc(p.formName) + ' · ' + esc(p.raceName) + ' · Lv ' + p.level +
         (p.named ? ' · <em class="named">Named</em>' : '') + '</span></div>' +
       '<div class="vitals">' +
-        '<div class="v"><label>HP</label>' + bar(p.hpCur, stats.hp, 'hp') + '</div>' +
-        '<div class="v"><label>MP</label>' + bar(p.mpCur, stats.mp, 'mp') + '</div>' +
+        '<div class="v"><label>HP</label>' + bar(hpNow, stats.hp, 'hp') + '</div>' +
+        '<div class="v"><label>MP</label>' + bar(mpNow, stats.mp, 'mp') + '</div>' +
         '<div class="v"><label>XP</label>' + bar(p.xp, nextXp, 'xp') + '</div>' +
       '</div>' +
       '<div class="meta">' +
@@ -898,9 +908,17 @@
       '</div>';
     }
 
+    var order = ISE.Combat.turnOrder(combat).map(function (o) {
+      return '<span class="turn ' + o.side + (o.current ? ' now' : '') +
+        (o.done ? ' done' : '') + (o.alive ? '' : ' dead') +
+        '" title="Agility ' + o.spd + '">' + esc(o.name) + '</span>';
+    }).join('<i>›</i>');
+
     overlay.innerHTML = '<div class="combat">' +
       '<div class="side enemies"><h3>Hostile</h3>' + enemies + '</div>' +
-      '<div class="middle"><div class="clog">' + log + '</div>' +
+      '<div class="middle">' +
+        '<div class="turnorder"><label>Turn order</label>' + order + '</div>' +
+        '<div class="clog">' + log + '</div>' +
         '<div class="cactions">' + actions + '</div>' +
         '<div class="hint">Round ' + combat.round +
         (UI.combatTarget ? ' · targeting ' + esc((ISE.Combat.actorById(combat, UI.combatTarget) || {}).name || '') : '') +

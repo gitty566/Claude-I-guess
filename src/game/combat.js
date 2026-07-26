@@ -297,8 +297,43 @@
       (enemyActors.length === 1 ? enemyActors[0].name + ' blocks the way.'
         : enemyActors.length + ' hostiles close in.'));
     nextRound(state);
+    noteFirstStrike(state);
     advance(state);
     return state;
+  };
+
+  /* Anything faster than the whole party acts before the player's first
+   * input. Say so up front — otherwise the combat screen simply opens with
+   * health already missing and reads as a bug. */
+  function noteFirstStrike(state) {
+    var ahead = [];
+    for (var i = 0; i < state.order.length; i++) {
+      var a = actorById(state, state.order[i]);
+      if (!a) continue;
+      if (a.side === 'party') break;
+      ahead.push(a.name);
+    }
+    if (!ahead.length) return;
+    state.preempted = true;
+    Combat.pushLog(state, 'preempt', (ahead.length === 1
+      ? ahead[0] + ' is faster than you and moves first.'
+      : ahead.join(' and ') + ' are faster than you and move first.'));
+  }
+
+  /* The round's turn order, for display. */
+  Combat.turnOrder = function (state) {
+    var out = [];
+    for (var i = 0; i < state.order.length; i++) {
+      var a = actorById(state, state.order[i]);
+      if (!a) continue;
+      out.push({
+        id: a.id, name: a.name, side: a.side, alive: a.alive,
+        spd: Math.round(stat(a, 'spd')),
+        done: i < state.turnIndex,
+        current: i === state.turnIndex
+      });
+    }
+    return out;
   };
 
   Combat.pushLog = function (state, type, text, data) {
@@ -314,10 +349,17 @@
   function nextRound(state) {
     state.round += 1;
     var living = state.actors.filter(function (a) { return a.alive; });
-    // Turn order by agility, ties broken by id for determinism.
+    /* Turn order by agility. On an exact tie the party moves first: the
+     * fallback used to be an id comparison, and every monster id ('mon_…',
+     * 'named_…') sorts ahead of 'player', so the player silently lost every
+     * tied initiative in the game. Same-side ties still break by id so the
+     * order stays deterministic. */
     living.sort(function (a, b) {
       var d = stat(b, 'spd') - stat(a, 'spd');
       if (Math.abs(d) > 0.001) return d;
+      var pa = a.side === 'party' ? 0 : 1;
+      var pb = b.side === 'party' ? 0 : 1;
+      if (pa !== pb) return pa - pb;
       return a.id < b.id ? -1 : 1;
     });
     state.order = living.map(function (a) { return a.id; });

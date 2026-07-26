@@ -85,6 +85,54 @@ while (!combat.over && turns++ < 200) {
 check('combat terminates', combat.over, combat.result + ' in ' + combat.round + ' rounds');
 check('combat produced a log', combat.log.length > 3, combat.log.length + ' entries');
 
+console.log('\n== initiative fairness ==');
+{
+  /* Monster ids ('mon_…', 'named_…') sort before 'player', so an id-based
+   * tiebreak silently handed every tied initiative to the enemy. Build an
+   * exact speed tie and check the player moves first and enters at full HP. */
+  const tp = ISE.Player.create(world, { name: 'Tie', raceId: 'human', originId: 'native' });
+  const tstats = ISE.Player.effectiveStats(tp);
+  tp.hpCur = tstats.hp; tp.mpCur = tstats.mp;
+  const twolf = ISE.MonsterGen.makeMonster(new ISE.RNG('tie'), world.skills,
+    { family: ISE.MonsterData.FAMILY_BY_ID.wolf, tier: 1, level: 3 });
+  const pActor = ISE.Combat.actorFromPlayer(tp);
+  twolf.stats.spd = pActor.stats.spd;               // exact tie
+  const tc = ISE.Combat.start(world, [pActor],
+    [ISE.Combat.actorFromMonster(twolf, 'enemy')], { seed: 'tie' });
+  check('speed ties go to the player', tc.order[0] === 'player',
+    'order: ' + tc.order.join(' > '));
+  check('player enters a tied fight at full health',
+    tc.party[0].hp === tc.party[0].stats.hp,
+    tc.party[0].hp + '/' + tc.party[0].stats.hp);
+
+  // A genuinely faster enemy still pre-empts, but must announce it.
+  const fast = ISE.MonsterGen.makeMonster(new ISE.RNG('fast'), world.skills,
+    { family: ISE.MonsterData.FAMILY_BY_ID.raptor, tier: 2, level: 12 });
+  fast.stats.spd = pActor.stats.spd * 3;
+  const p2 = ISE.Player.create(world, { name: 'Slow', raceId: 'human', originId: 'native' });
+  const s2 = ISE.Player.effectiveStats(p2);
+  p2.hpCur = s2.hp; p2.mpCur = s2.mp;
+  const fc = ISE.Combat.start(world, [ISE.Combat.actorFromPlayer(p2)],
+    [ISE.Combat.actorFromMonster(fast, 'enemy')], { seed: 'fast' });
+  check('a faster enemy still moves first', fc.order[0] !== 'player');
+  check('being pre-empted is stated in the log',
+    fc.log.some(l => l.type === 'preempt'),
+    (fc.log.filter(l => l.type === 'preempt')[0] || {}).text || 'no preempt line');
+}
+
+console.log('\n== rest restores to full ==');
+{
+  const rp = ISE.Game.state.player;
+  const before = ISE.Player.effectiveStats(rp);
+  rp.hpCur = 1; rp.mpCur = 1;
+  ISE.Player.rest(rp, 1);
+  check('rest fills health and magicules', rp.hpCur === before.hp && rp.mpCur === before.mp,
+    rp.hpCur + '/' + before.hp + ' hp, ' + rp.mpCur + '/' + before.mp + ' mp');
+  const ra = ISE.Combat.actorFromPlayer(rp);
+  check('a rested character is built into combat at full health',
+    ra.hp === ra.stats.hp, ra.hp + '/' + ra.stats.hp);
+}
+
 console.log('\n== dungeon run ==');
 const nearDungeon = world.dungeons
   .slice().sort((a, b) => ISE.U.dist(a.x, a.y, player.x, player.y) - ISE.U.dist(b.x, b.y, player.x, player.y))[0];
