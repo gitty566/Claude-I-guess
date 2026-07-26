@@ -17,10 +17,18 @@ from generated facts.
 ## Running it
 
 ```
+git clone <repo> && cd <repo>
 open index.html            # or drag it into a browser
 ```
 
-Everything is classic `<script>` tags, so it works over `file://`.
+Everything is classic `<script>` tags, so it works over `file://` with no
+server.
+
+**This is a folder, not a single file.** `index.html` loads `styles.css` and
+about thirty scripts from `src/`, all of which must sit next to it. Saving
+`index.html` on its own gives you a title screen with an empty parameter
+panel and a Generate button that does nothing — the page detects this and
+says so rather than failing silently.
 
 ### Development tools
 

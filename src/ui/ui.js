@@ -108,9 +108,26 @@
     }).join('');
 
     $('#title-params').innerHTML = rows;
-    $('#seed-input').value = p.seed;
+    // Never clobber what the player is in the middle of typing.
+    var seedEl = $('#seed-input');
+    if (seedEl && document.activeElement !== seedEl) seedEl.value = p.seed;
     var loadBtn = $('#btn-load');
     if (loadBtn) loadBtn.disabled = !G.hasSave();
+  }
+
+  /* Update one slider's readout in place. Re-rendering the whole panel on
+   * every input event tears out the element being dragged, which makes the
+   * sliders feel broken. */
+  function updateParamLabel(key) {
+    var d = null;
+    PARAM_DEFS.forEach(function (x) { if (x.key === key) d = x; });
+    if (!d) return;
+    var input = document.querySelector('[data-param="' + key + '"]');
+    if (!input) return;
+    var em = input.parentNode.querySelector('label em');
+    if (!em) return;
+    var v = UI.params[key];
+    em.textContent = d.fmt ? d.fmt(v) : (d.pct ? U.pct(v) : v);
   }
 
   UI.renderTitle = renderTitle;
@@ -120,7 +137,7 @@
     PARAM_DEFS.forEach(function (x) { if (x.key === key) d = x; });
     if (!d) return;
     UI.params[key] = d.step >= 1 ? Math.round(value) : parseFloat(value);
-    renderTitle();
+    updateParamLabel(key);
   }
 
   function randomizeAll() {
@@ -1572,6 +1589,7 @@
       if (e.target.dataset && e.target.dataset.param) {
         setParam(e.target.dataset.param, e.target.value);
       }
+      if (e.target.id === 'seed-input') UI.params.seed = e.target.value;
       if (e.target.id === 'name-input') UI.creation.name = e.target.value;
       if (e.target.id === 'skill-q') { UI.skillFilter.q = e.target.value; renderSkillBrowser(); }
     });
